@@ -476,6 +476,66 @@ void CollectionSystemManager::exitEditMode()
 	mEditingCollection = "Favorites";
 }
 
+
+// adds game for a specific collection
+bool CollectionSystemManager::addGameInCollection(std::string collectionName, FileData *file) {
+
+
+    mEditingCollection = collectionName;
+
+    CollectionSystemData *collectionSysData;
+
+    if (mCustomCollectionSystemsData.find(mEditingCollection) == mCustomCollectionSystemsData.cend())
+    {
+
+        CollectionSystemManager::get()->addNewCustomCollection(mEditingCollection);
+        collectionSysData = &(mCustomCollectionSystemsData.at(mEditingCollection));
+        std::string currentSetting = Settings::getInstance()->getString("CollectionSystemsCustom");
+        if(!currentSetting.empty())
+        {
+            currentSetting = currentSetting + ",";
+        }
+        Settings::getInstance()->setString("CollectionSystemsCustom", currentSetting+mEditingCollection );
+    }
+
+    mIsEditingCustom = true;
+
+    collectionSysData = &(mCustomCollectionSystemsData.at(mEditingCollection));
+
+    if (!collectionSysData->isPopulated) {
+        populateCustomCollection(collectionSysData);
+    }
+    // if it's bundled, this needs to be the bundle system
+    mEditingCollectionSystemData = collectionSysData;
+
+    if (file->getType() == GAME) {
+        SystemData *sysData = mEditingCollectionSystemData->system;
+        mEditingCollectionSystemData->needsSave = true;
+
+        std::string key = file->getFullPath();
+
+        FolderData *rootFolder = sysData->getRootFolder();
+
+        FileData *collectionEntry = rootFolder->FindByPath(key);
+
+        if (collectionEntry == nullptr) {
+            // we didn't find it here, we should add it
+            CollectionFileData *newGame = new CollectionFileData(file, sysData);
+            rootFolder->addChild(newGame);
+            sysData->addToIndex(newGame);
+
+        } else {
+            return false;
+        }
+
+        mIsEditingCustom = false;
+        updateCollectionFolderMetadata(sysData);
+
+        return true;
+    }
+    return false;
+}
+
 // adds or removes a game from a specific collection
 bool CollectionSystemManager::toggleGameInCollection(FileData* file)
 {

@@ -35,6 +35,9 @@ private:
 
 	void search(const ScraperSearchParams& params);
 	void processMedias(ScraperSearchResult result);
+
+    void processArcadeSystemCollection(ScraperSearchResult result);
+
 	void acceptResult(const ScraperSearchResult& result);
 	
 	std::string formatGameName(FileData* game);

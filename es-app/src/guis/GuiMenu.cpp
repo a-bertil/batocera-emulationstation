@@ -215,6 +215,12 @@ void GuiMenu::openScraperSettings()
 		s->addWithLabel(_("SCRAPE VIDEOS"), scrape_video);
 		s->addSaveFunc([scrape_video] { Settings::getInstance()->setBool("ScrapeVideos", scrape_video->getState()); });
 
+		// scrape arcade system
+        auto scrape_ArcadeSystem = std::make_shared<SwitchComponent>(mWindow);
+        scrape_ArcadeSystem->setState(Settings::getInstance()->getBool("ScrapeArcadeSystem"));
+        s->addWithLabel(_("SCRAPE ARCADE SYSTEMS"), scrape_ArcadeSystem);
+        s->addSaveFunc([scrape_ArcadeSystem] { Settings::getInstance()->setBool("ScrapeArcadeSystem", scrape_ArcadeSystem->getState()); });
+
 		// Account
 		createInputTextRow(s, _("USERNAME"), "ScreenScraperUser", false, true);
 		createInputTextRow(s, _("PASSWORD"), "ScreenScraperPass", true, true);

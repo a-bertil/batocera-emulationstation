@@ -78,6 +78,8 @@ public:
 	inline std::string getEditingCollection() { return mEditingCollection; };
 	bool toggleGameInCollection(FileData* file);
 
+    bool addGameInCollection(std::string collectionName, FileData* file);
+
 	SystemData* getSystemToView(SystemData* sys);
 	void updateCollectionFolderMetadata(SystemData* sys);
 

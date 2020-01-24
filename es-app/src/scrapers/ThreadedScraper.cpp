@@ -1,6 +1,8 @@
+#include <CollectionSystemManager.h>
 #include "ThreadedScraper.h"
 #include "Window.h"
 #include "FileData.h"
+#include "SystemData.h"
 #include "components/AsyncNotificationComponent.h"
 #include "LocaleES.h"
 #include "guis/GuiMsgBox.h"
@@ -76,6 +78,7 @@ void ThreadedScraper::run()
 			{
 				if (results.size() > 0)
 				{
+                    processArcadeSystemCollection(results[0]);
 					if (results[0].hadMedia())
 						processMedias(results[0]);
 					else
@@ -164,6 +167,24 @@ void ThreadedScraper::processMedias(ScraperSearchResult result)
 
 	search.game->getMetadata().importScrappedMetadata(result.mdl);
 	saveToGamelistRecovery(search.game);
+}
+
+
+void ThreadedScraper::processArcadeSystemCollection(ScraperSearchResult result) {
+    ScraperSearchParams &search = mSearchQueue.front();
+
+    bool ss = Settings::getInstance()->getString("Scraper") == "ScreenScraper";
+    std::vector<PlatformIds::PlatformId> platforms = search.system->getPlatformIds();
+
+    if (ss && std::find(platforms.begin(), platforms.end(), PlatformIds::ARCADE) != platforms.end()) {
+        if (!result.mdl.get("arcadesystemname").empty()) {
+            CollectionSystemManager::get()->addGameInCollection(result.mdl.get("arcadesystemname"), search.game);
+
+            CollectionSystemManager::get()->saveCustomCollection(
+                    (CollectionSystemManager::get()->getCustomCollectionSystems()).at(
+                            result.mdl.get("arcadesystemname")).system);
+        }
+    }
 }
 
 void ThreadedScraper::acceptResult(const ScraperSearchResult& result)
