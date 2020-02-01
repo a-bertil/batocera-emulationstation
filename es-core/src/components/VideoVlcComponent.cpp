@@ -617,8 +617,6 @@ void VideoVlcComponent::startVideo()
 
 				if (!Settings::getInstance()->getBool("VideoAudio"))
 					libvlc_audio_set_mute(mMediaPlayer, 1);
-                else
-                    libvlc_audio_set_mute(mMediaPlayer, 0);
 
                 libvlc_media_player_play(mMediaPlayer);
 				libvlc_video_set_callbacks(mMediaPlayer, lock, unlock, display, (void*)&mContext);

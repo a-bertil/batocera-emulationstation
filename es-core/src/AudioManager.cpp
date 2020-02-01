@@ -14,6 +14,8 @@
 #include <time.h>
 #else
 #include <unistd.h>
+#include <vlc.h>
+
 #endif
 
 AudioManager* AudioManager::sInstance = NULL;
@@ -48,6 +50,28 @@ bool AudioManager::isInitialized()
 
 void AudioManager::init()
 {
+    LOG(LogDebug) << "AudioManager::deinit";
+
+    mInitialized = false;
+
+    //stop all playback
+    stop();
+    stopMusic();
+
+    // Free known sounds from memory
+    for (unsigned int i = 0; i < sSoundVector.size(); i++)
+        sSoundVector[i]->deinit();
+
+    Mix_HookMusicFinished(nullptr);
+    Mix_HaltMusic();
+
+    //completely tear down SDL audio. else SDL hogs audio resources and emulators might fail to start...
+    Mix_CloseAudio();
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
+
+    LOG(LogInfo) << "SDL AUDIO Deinitialized";
+
+    return;
 	if (mInitialized)
 		return;
 	
@@ -208,31 +232,27 @@ void AudioManager::playRandomMusic(bool continueIfPlaying)
 
 void AudioManager::playMusic(std::string path)
 {
-	if (!mInitialized)
-		return;
 
-	// free the previous music
-	stopMusic(false);
+    libvlc_instance_t *inst;
 
-	if (!Settings::getInstance()->getBool("audio.bgmusic"))
-		return;
+    // load the vlc engine
+    inst = libvlc_new(0, NULL);
 
-	// load a new music
-	mCurrentMusic = Mix_LoadMUS(path.c_str());
-	if (mCurrentMusic == NULL)
-	{
-		LOG(LogError) << Mix_GetError() << " for " << path;
-		return;
-	}
+    libvlc_media_player_t *mp;
+    libvlc_media_t *m;
 
-	if (Mix_FadeInMusic(mCurrentMusic, 1, 1000) == -1)
-	{
-		stopMusic();
-		return;
-	}
+    m = libvlc_media_new_path(inst, path.c_str());
 
-	mCurrentMusicPath = path;
-	Mix_HookMusicFinished(AudioManager::musicEnd_callback);
+    // create a media play playing environment
+    mp = libvlc_media_player_new_from_media(m);
+
+    // no need to keep the media now
+    libvlc_media_release(m);
+
+    // play the media_player
+    libvlc_media_player_play(mp);
+
+
 }
 
 // batocera
