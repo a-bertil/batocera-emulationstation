@@ -11,6 +11,7 @@
 #include "SystemConf.h"
 #include "ThemeData.h"
 #include <SDL_timer.h>
+#include <AudioManager.h>
 
 #ifdef WIN32
 #include <codecvt>
@@ -526,6 +527,7 @@ void VideoVlcComponent::handleLooping()
 
 void VideoVlcComponent::startVideo()
 {
+    AudioManager::getInstance()->deinit();
 	if (mIsPlaying)
 		return;
 
@@ -548,7 +550,7 @@ void VideoVlcComponent::startVideo()
 		mMedia = libvlc_media_new_path(mVLC, path.c_str());
 		if (mMedia)
 		{			
-			// use : vlc –long-help
+			// use : vlc ï¿½long-help
 			// WIN32 ? libvlc_media_add_option(mMedia, ":avcodec-hw=dxva2");
 			// RPI/OMX ? libvlc_media_add_option(mMedia, ":codec=mediacodec,iomx,all"); .
 
