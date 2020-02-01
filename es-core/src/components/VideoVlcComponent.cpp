@@ -527,7 +527,6 @@ void VideoVlcComponent::handleLooping()
 
 void VideoVlcComponent::startVideo()
 {
-    AudioManager::getInstance()->deinit();
 	if (mIsPlaying)
 		return;
 
@@ -617,9 +616,11 @@ void VideoVlcComponent::startVideo()
 				mMediaPlayer = libvlc_media_player_new_from_media(mMedia);
 
 				if (!Settings::getInstance()->getBool("VideoAudio"))
-					libvlc_audio_set_mute(mMediaPlayer, 1);				
+					libvlc_audio_set_mute(mMediaPlayer, 1);
+                else
+                    libvlc_audio_set_mute(mMediaPlayer, 0);
 
-				libvlc_media_player_play(mMediaPlayer);
+                libvlc_media_player_play(mMediaPlayer);
 				libvlc_video_set_callbacks(mMediaPlayer, lock, unlock, display, (void*)&mContext);
 				libvlc_video_set_format(mMediaPlayer, "RGBA", (int)mVideoWidth, (int)mVideoHeight, (int)mVideoWidth * 4);
 				/*
